@@ -7,22 +7,22 @@ from ktem.db.models import User, engine
 from sqlmodel import Session, select
 from theflow.settings import settings as flowsettings
 
-USERNAME_RULE = """**Username rule:**
+USERNAME_RULE = """**Benutzernamen-Regeln:**
 
-- Username is case-insensitive
-- Username must be at least 3 characters long
-- Username must be at most 32 characters long
-- Username must contain only alphanumeric characters and underscores
+- Benutzername ist nicht case-sensitiv
+- Benutzername muss mindestens 3 Zeichen lang sein
+- Benutzername darf höchstens 32 Zeichen lang sein
+- Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten
 """
 
 
-PASSWORD_RULE = """**Password rule:**
+PASSWORD_RULE = """**Passwort-Regeln:**
 
-- Password must be at least 8 characters long
-- Password must contain at least one uppercase letter
-- Password must contain at least one lowercase letter
-- Password must contain at least one digit
-- Password must contain at least one special character from the following:
+- Passwort muss mindestens 8 Zeichen lang sein
+- Passwort muss mindestens einen Großbuchstaben enthalten
+- Passwort muss mindestens einen Kleinbuchstaben enthalten
+- Passwort muss mindestens eine Zahl enthalten
+- Passwort muss mindestens ein Sonderzeichen aus folgender Liste enthalten:
     ^ $ * . [ ] { } ( ) ? - " ! @ # % & / \\ , > < ' : ; | _ ~  + =
 """
 
@@ -133,7 +133,7 @@ class UserManagement(BasePage):
                 gr.Info(f'User "{usn}" created successfully')
 
     def on_building_ui(self):
-        with gr.Tab(label="User list"):
+        with gr.Tab(label="Benutzerliste"):
             self.state_user_list = gr.State(value=None)
             self.user_list = gr.DataFrame(
                 headers=["id", "name", "admin"],
@@ -143,40 +143,40 @@ class UserManagement(BasePage):
 
             with gr.Group(visible=False) as self._selected_panel:
                 self.selected_user_id = gr.State(value=-1)
-                self.usn_edit = gr.Textbox(label="Username")
+                self.usn_edit = gr.Textbox(label="Benutzername")
                 with gr.Row():
-                    self.pwd_edit = gr.Textbox(label="Change password", type="password")
+                    self.pwd_edit = gr.Textbox(label="Passwort ändern", type="password")
                     self.pwd_cnf_edit = gr.Textbox(
-                        label="Confirm change password",
+                        label="Passwortänderung bestätigen",
                         type="password",
                     )
-                self.admin_edit = gr.Checkbox(label="Admin")
+                self.admin_edit = gr.Checkbox(label="Administrator")
 
             with gr.Row(visible=False) as self._selected_panel_btn:
                 with gr.Column():
-                    self.btn_edit_save = gr.Button("Save")
+                    self.btn_edit_save = gr.Button("Speichern")
                 with gr.Column():
-                    self.btn_delete = gr.Button("Delete")
+                    self.btn_delete = gr.Button("Löschen")
                     with gr.Row():
                         self.btn_delete_yes = gr.Button(
-                            "Confirm delete", variant="primary", visible=False
+                            "Löschen bestätigen", variant="primary", visible=False
                         )
-                        self.btn_delete_no = gr.Button("Cancel", visible=False)
+                        self.btn_delete_no = gr.Button("Abbrechen", visible=False)
                 with gr.Column():
-                    self.btn_close = gr.Button("Close")
+                    self.btn_close = gr.Button("Schließen")
 
-        with gr.Tab(label="Create user"):
-            self.usn_new = gr.Textbox(label="Username", interactive=True)
+        with gr.Tab(label="Benutzer erstellen"):
+            self.usn_new = gr.Textbox(label="Benutzername", interactive=True)
             self.pwd_new = gr.Textbox(
-                label="Password", type="password", interactive=True
+                label="Passwort", type="password", interactive=True
             )
             self.pwd_cnf_new = gr.Textbox(
-                label="Confirm password", type="password", interactive=True
+                label="Passwort bestätigen", type="password", interactive=True
             )
             with gr.Row():
                 gr.Markdown(USERNAME_RULE)
                 gr.Markdown(PASSWORD_RULE)
-            self.btn_new = gr.Button("Create user")
+            self.btn_new = gr.Button("Benutzer erstellen")
 
     def on_register_events(self):
         self.btn_new.click(

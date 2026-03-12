@@ -37,12 +37,12 @@ class IndexManagement(BasePage):
         self._app = app
         self.manager: IndexManager = app.index_manager
         self.spec_desc_default = (
-            "# Spec description\n\nSelect an index to view the spec description."
+            "# Beschreibung der Spezifikation\n\nWähle einen Index aus, um die Beschreibung der Spezifikation zu sehen."
         )
         self.on_building_ui()
 
     def on_building_ui(self):
-        with gr.Tab(label="View"):
+        with gr.Tab(label="Anzeigen"):
             self.index_list = gr.DataFrame(
                 headers=["id", "name", "index type"],
                 interactive=False,
@@ -54,55 +54,55 @@ class IndexManagement(BasePage):
                 with gr.Row():
                     with gr.Column():
                         self.edit_name = gr.Textbox(
-                            label="Index name",
+                            label="Indexname",
                         )
                         self.edit_spec = gr.Textbox(
-                            label="Index config",
-                            info="Admin configuration of the Index in YAML format",
+                            label="Index-Konfiguration",
+                            info="Administrationskonfiguration des Index im YAML-Format",
                             lines=10,
                         )
 
                         gr.Markdown(
-                            "IMPORTANT: Changing or deleting the index will require "
-                            "restarting the system. Some config settings will require "
-                            "rebuilding the index for the index to work properly."
+                            "WICHTIG: Das Ändern oder Löschen des Index erfordert "
+                            "einen Neustart des Systems. Einige Konfigurationen "
+                            "erfordern ein Neuaufbauen des Index."
                         )
                         with gr.Row():
                             self.btn_edit_save = gr.Button(
-                                "Save", min_width=10, variant="primary"
+                                "Speichern", min_width=10, variant="primary"
                             )
                             self.btn_delete = gr.Button(
-                                "Delete", min_width=10, variant="stop"
+                                "Löschen", min_width=10, variant="stop"
                             )
                             with gr.Row(visible=False) as self._delete_confirm:
                                 self.btn_delete_yes = gr.Button(
-                                    "Confirm Delete",
+                                    "Löschen bestätigen",
                                     variant="stop",
                                     min_width=10,
                                 )
-                                self.btn_delete_no = gr.Button("Cancel", min_width=10)
-                            self.btn_close = gr.Button("Close", min_width=10)
+                                self.btn_delete_no = gr.Button("Abbrechen", min_width=10)
+                            self.btn_close = gr.Button("Schließen", min_width=10)
 
                     with gr.Column():
-                        self.edit_spec_desc = gr.Markdown("# Spec description")
+                        self.edit_spec_desc = gr.Markdown("# Beschreibung der Spezifikation")
 
-        with gr.Tab(label="Add"):
+        with gr.Tab(label="Hinzufügen"):
             with gr.Row():
                 with gr.Column(scale=2):
                     self.name = gr.Textbox(
-                        label="Index name",
-                        info="Must be unique and non-empty.",
+                        label="Indexname",
+                        info="Muss eindeutig sein und darf nicht leer sein.",
                     )
-                    self.index_type = gr.Dropdown(label="Index type")
+                    self.index_type = gr.Dropdown(label="Index-Typ")
                     self.spec = gr.Textbox(
-                        label="Specification",
-                        info="Specification of the index in YAML format.",
+                        label="Spezifikation",
+                        info="Spezifikation des Index im YAML-Format.",
                     )
                     gr.Markdown(
-                        "<mark>Note</mark>: "
-                        "After creating index, please restart the app"
+                        "<mark>Hinweis</mark>: "
+                        "Nach dem Erstellen des Index bitte die App neu starten"
                     )
-                    self.btn_new = gr.Button("Add", variant="primary")
+                    self.btn_new = gr.Button("Hinzufügen", variant="primary")
 
                 with gr.Column(scale=3):
                     self.spec_desc = gr.Markdown(self.spec_desc_default)

@@ -16,9 +16,9 @@ if DEFAULT_OLLAMA_URL.endswith("/"):
 
 
 DEMO_MESSAGE = (
-    "This is a public space. Please use the "
-    '"Duplicate Space" function on the top right '
-    "corner to setup your own space."
+    "Dies ist ein öffentlicher Bereich. Bitte nutze die "
+    '"Space duplizieren"-Funktion oben rechts, '
+    "um deinen eigenen Bereich einzurichten."
 )
 
 
@@ -55,20 +55,20 @@ class SetupPage(BasePage):
         self.on_building_ui()
 
     def on_building_ui(self):
-        gr.Markdown(f"# Welcome to {self._app.app_name} first setup!")
+        gr.Markdown(f"# Willkommen zur ersten Einrichtung von {self._app.app_name}!")
         self.radio_model = gr.Radio(
             [
-                ("Cohere API (*free registration*) - recommended", "cohere"),
-                ("Google API (*free registration*)", "google"),
-                ("OpenAI API (for GPT-based models)", "openai"),
-                ("Local LLM (for completely *private RAG*)", "ollama"),
+                ("Cohere API (*kostenlose Registrierung*) - empfohlen", "cohere"),
+                ("Google API (*kostenlose Registrierung*)", "google"),
+                ("OpenAI API (für GPT-Modelle)", "openai"),
+                ("Lokales LLM (für vollständig *privates RAG*)", "ollama"),
             ],
-            label="Select your model provider",
+            label="Modellanbieter auswählen",
             value="cohere",
             info=(
-                "Note: You can change this later. "
-                "If you are not sure, go with the first option "
-                "which fits most normal users."
+                "Hinweis: Das kannst du später ändern. "
+                "Wenn du unsicher bist, nimm die erste Option. "
+                "Sie passt für die meisten Nutzer."
             ),
             interactive=True,
         )
@@ -77,52 +77,51 @@ class SetupPage(BasePage):
             gr.Markdown(
                 (
                     "#### OpenAI API Key\n\n"
-                    "(create at https://platform.openai.com/api-keys)"
+                    "(erstellen unter https://platform.openai.com/api-keys)"
                 )
             )
             self.openai_api_key = gr.Textbox(
-                show_label=False, placeholder="OpenAI API Key"
+                show_label=False, placeholder="OpenAI-API-Schlüssel"
             )
 
         with gr.Column(visible=True) as self.cohere_option:
             gr.Markdown(
                 (
                     "#### Cohere API Key\n\n"
-                    "(register your free API key "
-                    "at https://dashboard.cohere.com/api-keys)"
+                    "(kostenlosen API-Schlüssel registrieren "
+                    "unter https://dashboard.cohere.com/api-keys)"
                 )
             )
             self.cohere_api_key = gr.Textbox(
-                show_label=False, placeholder="Cohere API Key"
+                show_label=False, placeholder="Cohere-API-Schlüssel"
             )
 
         with gr.Column(visible=False) as self.google_option:
             gr.Markdown(
                 (
                     "#### Google API Key\n\n"
-                    "(register your free API key "
-                    "at https://aistudio.google.com/app/apikey)"
+                    "(kostenlosen API-Schlüssel registrieren "
+                    "unter https://aistudio.google.com/app/apikey)"
                 )
             )
             self.google_api_key = gr.Textbox(
-                show_label=False, placeholder="Google API Key"
+                show_label=False, placeholder="Google-API-Schlüssel"
             )
 
         with gr.Column(visible=False) as self.ollama_option:
             gr.Markdown(
                 (
                     "#### Setup Ollama\n\n"
-                    "Download and install Ollama from "
-                    "https://ollama.com/. Check out latest models at "
-                    "https://ollama.com/library. "
+                    "Lade Ollama von https://ollama.com/ herunter und installiere es. "
+                    "Aktuelle Modelle findest du unter https://ollama.com/library. "
                 )
             )
             self.ollama_model_name = gr.Textbox(
-                label="LLM model name",
+                label="LLM-Modellname",
                 value=config("LOCAL_MODEL", default="qwen2.5:7b"),
             )
             self.ollama_emb_model_name = gr.Textbox(
-                label="Embedding model name",
+                label="Embedding-Modellname",
                 value=config("LOCAL_MODEL_EMBEDDINGS", default="nomic-embed-text"),
             )
 
@@ -131,9 +130,9 @@ class SetupPage(BasePage):
         )
 
         with gr.Row():
-            self.btn_finish = gr.Button("Proceed", variant="primary")
+            self.btn_finish = gr.Button("Weiter", variant="primary")
             self.btn_skip = gr.Button(
-                "I am an advance user. Skip this.", variant="stop"
+                "Ich bin fortgeschritten. Überspringen.", variant="stop"
             )
 
     def on_register_events(self):

@@ -32,12 +32,12 @@ class LoginPage(BasePage):
         self.on_building_ui()
 
     def on_building_ui(self):
-        gr.Markdown(f"# Welcome to {self._app.app_name}!")
-        self.usn = gr.Textbox(label="Username", visible=True, interactive=True)
+        gr.Markdown(f"# Willkommen bei {self._app.app_name}!")
+        self.usn = gr.Textbox(label="Benutzername", visible=True, interactive=True)
         self.pwd = gr.Textbox(
-            label="Password", type="password", visible=True, interactive=True
+            label="Passwort", type="password", visible=True, interactive=True
         )
-        self.btn_login = gr.Button("Login", visible=True)
+        self.btn_login = gr.Button("Anmelden", visible=True)
 
     def on_register_events(self):
         onSignIn = gr.on(
@@ -130,5 +130,5 @@ class LoginPage(BasePage):
                 if result:
                     return result[0].id, "", ""
 
-                gr.Warning("Invalid username or password")
+                gr.Warning("Benutzername oder Passwort ist falsch")
                 return None, usn, pwd
