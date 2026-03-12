@@ -1631,8 +1631,8 @@ class FileSelector(BasePage):
         self.mode = gr.Radio(
             value=default_mode,
             choices=[
-                ("Search All", "all"),
-                ("Search In File(s)", "select"),
+                ("Alle durchsuchen", "all"),
+                ("In Dateien suchen", "select"),
             ],
             container=False,
         )
@@ -1725,7 +1725,7 @@ class FileSelector(BasePage):
             for result in results:
                 item = result[0]
                 options.append(
-                    (f"group: '{item.name}'", json.dumps(item.data.get("files", [])))
+                    (f"Gruppe: '{item.name}'", json.dumps(item.data.get("files", [])))
                 )
 
         if selected_files:
