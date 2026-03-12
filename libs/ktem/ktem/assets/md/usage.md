@@ -1,6 +1,6 @@
-# Basic Usage
+# Grundlegende Nutzung
 
-## 1. Add your AI models
+## 1. KI-Modelle hinzufügen
 
 ![resources tab](https://raw.githubusercontent.com/Cinnamon/kotaemon/main/docs/images/resources-tab.png)
 
@@ -11,18 +11,18 @@
   that you have access to, you will be able to switch between them while using the
   application.
 
-To add a model:
+So fügst du ein Modell hinzu:
 
-1. Navigate to the `Resources` tab.
-2. Select the `LLMs` sub-tab.
-3. Select the `Add` sub-tab.
-4. Config the model to add:
-   - Give it a name.
-   - Pick a vendor/provider (e.g. `ChatOpenAI`).
-   - Provide the specifications.
-   - (Optional) Set the model as default.
-5. Click `Add` to add the model.
-6. Select `Embedding Models` sub-tab and repeat the step 3 to 5 to add an embedding model.
+1. Öffne den Tab `Ressourcen`.
+2. Wähle den Untertab `LLMs`.
+3. Wähle den Untertab `Hinzufügen`.
+4. Konfiguriere das Modell:
+   - Vergib einen Namen.
+   - Wähle einen Anbieter (z. B. `ChatOpenAI`).
+   - Gib die Spezifikation an.
+   - Optional: Setze das Modell als Standard.
+5. Klicke auf `Hinzufügen`, um das Modell anzulegen.
+6. Füge anschließend auf die gleiche Weise ein Embedding-Modell hinzu.
 
 <details markdown>
 
@@ -105,7 +105,7 @@ Here is how to get the full path of your model file:
 - On Windows 11: right click the file and select `Copy as Path`.
 </details>
 
-## 2. Upload your documents
+## 2. Dokumente hochladen
 
 ![file index tab](https://raw.githubusercontent.com/Cinnamon/kotaemon/main/docs/images/file-index-tab.png)
 
@@ -119,7 +119,7 @@ Navigate to the `File Index` tab and you will see 2 sections:
 2. File list:
    - This section shows the list of files that have been uploaded to the application and allows users to delete them.
 
-## 3. Chat with your documents
+## 3. Mit deinen Dokumenten chatten
 
 ![chat tab](https://raw.githubusercontent.com/Cinnamon/kotaemon/main/docs/images/chat-tab.png)
 

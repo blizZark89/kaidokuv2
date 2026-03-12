@@ -35,14 +35,14 @@ def validate_username(usn):
     """
     errors = []
     if len(usn) < 3:
-        errors.append("Username must be at least 3 characters long")
+        errors.append("Benutzername muss mindestens 3 Zeichen lang sein")
 
     if len(usn) > 32:
-        errors.append("Username must be at most 32 characters long")
+        errors.append("Benutzername darf höchstens 32 Zeichen lang sein")
 
     if not usn.replace("_", "").isalnum():
         errors.append(
-            "Username must contain only alphanumeric characters and underscores"
+            "Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten"
         )
 
     return "; ".join(errors)
@@ -67,25 +67,25 @@ def validate_password(pwd, pwd_cnf):
     """
     errors = []
     if pwd != pwd_cnf:
-        errors.append("Password does not match")
+        errors.append("Passwörter stimmen nicht überein")
 
     if len(pwd) < 8:
-        errors.append("Password must be at least 8 characters long")
+        errors.append("Passwort muss mindestens 8 Zeichen lang sein")
 
     if not any(c.isupper() for c in pwd):
-        errors.append("Password must contain at least one uppercase letter")
+        errors.append("Passwort muss mindestens einen Großbuchstaben enthalten")
 
     if not any(c.islower() for c in pwd):
-        errors.append("Password must contain at least one lowercase letter")
+        errors.append("Passwort muss mindestens einen Kleinbuchstaben enthalten")
 
     if not any(c.isdigit() for c in pwd):
-        errors.append("Password must contain at least one digit")
+        errors.append("Passwort muss mindestens eine Zahl enthalten")
 
     special_chars = "^$*.[]{}()?-\"!@#%&/\\,><':;|_~+="
     if not any(c in special_chars for c in pwd):
         errors.append(
-            "Password must contain at least one special character from the "
-            f"following: {special_chars}"
+            "Passwort muss mindestens ein Sonderzeichen aus folgender Liste enthalten: "
+            f"{special_chars}"
         )
 
     if errors:

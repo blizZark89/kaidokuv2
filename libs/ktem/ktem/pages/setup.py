@@ -303,7 +303,7 @@ class SetupPage(BasePage):
 
             try:
                 for model_name in [emb_model_name, llm_model_name]:
-                    log_content += f"- Downloading model `{model_name}` from Ollama<br>"
+                    log_content += f"- Lade Modell `{model_name}` von Ollama herunter<br>"
                     yield log_content
 
                     pre_download_log = log_content
@@ -324,60 +324,60 @@ class SetupPage(BasePage):
                         yield log_content
             except Exception as e:
                 log_content += (
-                    "Make sure you have download and installed Ollama correctly. "
-                    f"Got error: {str(e)}"
+                    "Stelle sicher, dass Ollama korrekt installiert wurde. "
+                    f"Fehler: {str(e)}"
                 )
                 yield log_content
-                raise gr.Error("Failed to download model from Ollama.")
+                raise gr.Error("Modell konnte nicht von Ollama heruntergeladen werden.")
 
         # test models connection
         llm_output = emb_output = None
 
         # LLM model
-        log_content += f"- Testing LLM model: {radio_model_value}<br>"
+        log_content += f"- Teste LLM-Modell: {radio_model_value}<br>"
         yield log_content
 
         llm = llms.get(radio_model_value)  # type: ignore
-        log_content += "- Sending a message `Hi`<br>"
+        log_content += "- Sende Nachricht `Hi`<br>"
         yield log_content
         try:
             llm_output = llm("Hi")
         except Exception as e:
             log_content += (
                 f"<mark style='color: yellow; background: red'>- Connection failed. "
-                f"Got error:\n {str(e)}</mark>"
+                f"Fehler:\n {str(e)}</mark>"
             )
 
         if llm_output:
             log_content += (
-                "<mark style='background: green; color: white'>- Connection success. "
+                "<mark style='background: green; color: white'>- Verbindung erfolgreich. "
                 "</mark><br>"
             )
         yield log_content
 
         if llm_output:
             # embedding model
-            log_content += f"- Testing Embedding model: {radio_model_value}<br>"
+            log_content += f"- Teste Embedding-Modell: {radio_model_value}<br>"
             yield log_content
 
             emb = embeddings.get(radio_model_value)
             assert emb, f"Embedding model {radio_model_value} not found."
 
-            log_content += "- Sending a message `Hi`<br>"
+            log_content += "- Sende Nachricht `Hi`<br>"
             yield log_content
             try:
                 emb_output = emb("Hi")
             except Exception as e:
                 log_content += (
                     f"<mark style='color: yellow; background: red'>"
-                    "- Connection failed. "
-                    f"Got error:\n {str(e)}</mark>"
+                    "- Verbindung fehlgeschlagen. "
+                    f"Fehler:\n {str(e)}</mark>"
                 )
 
             if emb_output:
                 log_content += (
                     "<mark style='background: green; color: white'>"
-                    "- Connection success. "
+                    "- Verbindung erfolgreich. "
                     "</mark><br>"
                 )
             yield log_content
@@ -386,7 +386,7 @@ class SetupPage(BasePage):
             gr.Info("Modelleinrichtung erfolgreich abgeschlossen!")
         else:
             raise gr.Error(
-                "Setup models failed. Please verify your connection and API key."
+                "Modelleinrichtung fehlgeschlagen. Bitte prüfe Verbindung und API-Schlüssel."
             )
 
     def update_default_settings(self, radio_model_value, default_settings):

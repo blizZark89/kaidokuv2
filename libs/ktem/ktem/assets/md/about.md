@@ -1,10 +1,10 @@
-# About Kotaemon
+# Über Kotaemon
 
-An open-source tool for you to chat with your documents.
+Ein Open-Source-Werkzeug, mit dem du mit deinen Dokumenten chatten kannst.
 
-[Source Code](https://github.com/Cinnamon/kotaemon) |
+[Quellcode](https://github.com/Cinnamon/kotaemon) |
 [Demo](https://huggingface.co/spaces/cin-model/kotaemon-demo)
 
-[User Guide](https://cinnamon.github.io/kotaemon/) |
-[Developer Guide](https://cinnamon.github.io/kotaemon/development/) |
+[Benutzerhandbuch](https://cinnamon.github.io/kotaemon/) |
+[Entwicklerhandbuch](https://cinnamon.github.io/kotaemon/development/) |
 [Feedback](https://github.com/Cinnamon/kotaemon/issues)
