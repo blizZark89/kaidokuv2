@@ -86,7 +86,7 @@ RUN --mount=type=ssh  \
 ENV USE_LIGHTRAG=true
 RUN --mount=type=ssh  \
     --mount=type=cache,target=/root/.cache/uv  \
-    uv pip install --python .venv aioboto3 nano-vectordb ollama xxhash "lightrag-hku<=1.3.0"
+    uv pip install --python .venv aioboto3 nano-vectordb xxhash "lightrag-hku<=1.3.0"
 
 RUN --mount=type=ssh  \
     --mount=type=cache,target=/root/.cache/uv  \
@@ -94,16 +94,5 @@ RUN --mount=type=ssh  \
 
 # Download NLTK data from LlamaIndex
 RUN /app/.venv/bin/python -c "from llama_index.core.readers.base import BaseReader"
-
-ENTRYPOINT ["sh", "/app/launch.sh"]
-
-# Ollama-bundled version
-FROM full AS ollama
-
-# Install ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh
-
-# RUN nohup bash -c "ollama serve &" && sleep 4 && ollama pull qwen2.5:7b
-RUN nohup bash -c "ollama serve &" && sleep 4 && ollama pull nomic-embed-text
 
 ENTRYPOINT ["sh", "/app/launch.sh"]
