@@ -259,7 +259,7 @@ class RerankingManagement(BasePage):
             )
 
             reranking_models_manager.add(name, spec=spec, default=default)
-            gr.Info(f'Reranking model "{name}" created successfully')
+            gr.Info(f'Reranking-Modell "{name}" wurde erfolgreich erstellt')
         except ValueError as e:
             raise gr.Error(str(e))
         except Exception as e:
@@ -286,7 +286,7 @@ class RerankingManagement(BasePage):
 
     def select_rerank(self, rerank_list, ev: gr.SelectData):
         if ev.value == "-" and ev.index[0] == 0:
-            gr.Info("No reranking model is loaded. Please add first")
+            gr.Info("Es ist kein Reranking-Modell geladen. Bitte füge zuerst eines hinzu")
             return ""
 
         if not ev.selected:
@@ -368,7 +368,7 @@ class RerankingManagement(BasePage):
             )
             yield log_content
 
-            gr.Info(f"Embedding {selected_rerank_name} connect successfully")
+            gr.Info(f"Reranking-Modell {selected_rerank_name} erfolgreich verbunden")
         except Exception as e:
             print(e)
             log_content += (
@@ -392,7 +392,7 @@ class RerankingManagement(BasePage):
             final_name = (
                 new_name if new_name != selected_rerank_name else selected_rerank_name
             )
-            gr.Info(f'Reranking model "{final_name}" saved successfully')
+            gr.Info(f'Reranking-Modell "{final_name}" wurde erfolgreich gespeichert')
             return final_name
         except ValueError as e:
             raise gr.Error(str(e))

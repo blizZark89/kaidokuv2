@@ -254,7 +254,7 @@ class IndexManagement(BasePage):
                 config=yaml.load(config, Loader=YAMLNoDateSafeLoader),
                 index_type=index_type,
             )
-            gr.Info(f'Index "{name}" created successfully. Please restart the app!')
+            gr.Info(f'Index "{name}" wurde erfolgreich erstellt. Bitte starte die App neu!')
         except Exception as e:
             raise gr.Error(f'Failed to create index "{name}": {e}')
 
@@ -280,7 +280,7 @@ class IndexManagement(BasePage):
     def select_index(self, index_list, ev: gr.SelectData) -> int:
         """Return the index id"""
         if ev.value == "-" and ev.index[0] == 0:
-            gr.Info("No index is constructed. Please create one first!")
+            gr.Info("Es ist kein Index vorhanden. Bitte erstelle zuerst einen!")
             return -1
 
         if not ev.selected:
@@ -328,7 +328,7 @@ class IndexManagement(BasePage):
         try:
             spec = yaml.load(config, Loader=YAMLNoDateSafeLoader)
             self.manager.update_index(selected_index_id, name, spec)
-            gr.Info(f'Index "{name}" updated successfully. Please restart the app!')
+            gr.Info(f'Index "{name}" wurde erfolgreich aktualisiert. Bitte starte die App neu!')
         except gr.Error:
             raise
         except Exception as e:
@@ -337,9 +337,9 @@ class IndexManagement(BasePage):
     def delete_index(self, selected_index_id):
         try:
             self.manager.delete_index(selected_index_id)
-            gr.Info("Delete index successfully. Please restart the app!")
+            gr.Info("Index erfolgreich gelöscht. Bitte starte die App neu!")
         except Exception as e:
-            gr.Warning(f"Fail to delete index: {e}")
+            gr.Warning(f"Index konnte nicht gelöscht werden: {e}")
             return selected_index_id
 
         return -1

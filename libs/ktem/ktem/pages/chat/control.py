@@ -403,7 +403,7 @@ class ConversationControl(BasePage):
             session.commit()
 
         history = self.load_chat_history(user_id)
-        gr.Info("Conversation renamed.")
+        gr.Info("Unterhaltung umbenannt.")
         return (
             gr.update(choices=history),
             conversation_id,
@@ -418,11 +418,11 @@ class ConversationControl(BasePage):
             return
 
         if user_id is None:
-            gr.Warning("Please sign in first (Settings → User Settings)")
+            gr.Warning("Bitte zuerst anmelden (Einstellungen → Benutzereinstellungen)")
             return gr.update(), ""
 
         if not conversation_id:
-            gr.Warning("No conversation selected.")
+            gr.Warning("Keine Unterhaltung ausgewählt.")
             return gr.update(), ""
 
         with Session(engine) as session:
@@ -438,7 +438,7 @@ class ConversationControl(BasePage):
             session.add(result)
             session.commit()
 
-        gr.Info("Chat suggestions updated.")
+        gr.Info("Chat-Vorschläge aktualisiert.")
 
     def toggle_demo_login_visibility(self, user_api_key, request: gr.Request):
         try:

@@ -259,7 +259,7 @@ class LLMManagement(BasePage):
             )
 
             llms.add(name, spec=spec, default=default)
-            gr.Info(f"LLM '{name}' created successfully")
+            gr.Info(f"LLM '{name}' wurde erfolgreich erstellt")
         except ValueError as e:
             raise gr.Error(str(e))
         except Exception as e:
@@ -286,7 +286,7 @@ class LLMManagement(BasePage):
 
     def select_llm(self, llm_list, ev: gr.SelectData):
         if ev.value == "-" and ev.index[0] == 0:
-            gr.Info("No LLM is loaded. Please add LLM first")
+            gr.Info("Es ist kein LLM geladen. Bitte füge zuerst ein LLM hinzu")
             return ""
 
         if not ev.selected:
@@ -369,7 +369,7 @@ class LLMManagement(BasePage):
             )
             yield log_content
 
-            gr.Info(f"LLM {selected_llm_name} connect successfully")
+            gr.Info(f"LLM {selected_llm_name} erfolgreich verbunden")
         except Exception as e:
             log_content += (
                 f"<mark style='color: yellow; background: red'>- Connection failed. "
@@ -390,7 +390,7 @@ class LLMManagement(BasePage):
             final_name = (
                 new_name if new_name != selected_llm_name else selected_llm_name
             )
-            gr.Info(f"LLM '{final_name}' saved successfully")
+            gr.Info(f"LLM '{final_name}' wurde erfolgreich gespeichert")
             return final_name
         except ValueError as e:
             raise gr.Error(str(e))

@@ -260,7 +260,7 @@ class EmbeddingManagement(BasePage):
             )
 
             embedding_models_manager.add(name, spec=spec, default=default)
-            gr.Info(f'Embedding model "{name}" created successfully')
+            gr.Info(f'Embedding-Modell "{name}" wurde erfolgreich erstellt')
         except ValueError as e:
             raise gr.Error(str(e))
         except Exception as e:
@@ -287,7 +287,7 @@ class EmbeddingManagement(BasePage):
 
     def select_emb(self, emb_list, ev: gr.SelectData):
         if ev.value == "-" and ev.index[0] == 0:
-            gr.Info("No embedding model is loaded. Please add first")
+            gr.Info("Es ist kein Embedding-Modell geladen. Bitte füge zuerst eines hinzu")
             return ""
 
         if not ev.selected:
@@ -369,7 +369,7 @@ class EmbeddingManagement(BasePage):
             )
             yield log_content
 
-            gr.Info(f"Embedding {selected_emb_name} connect successfully")
+            gr.Info(f"Embedding {selected_emb_name} erfolgreich verbunden")
         except Exception as e:
             print(e)
             log_content += (
@@ -393,7 +393,7 @@ class EmbeddingManagement(BasePage):
             final_name = (
                 new_name if new_name != selected_emb_name else selected_emb_name
             )
-            gr.Info(f'Embedding model "{final_name}" saved successfully')
+            gr.Info(f'Embedding-Modell "{final_name}" wurde erfolgreich gespeichert')
             return final_name
         except ValueError as e:
             raise gr.Error(str(e))

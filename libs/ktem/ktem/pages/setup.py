@@ -196,7 +196,7 @@ class SetupPage(BasePage):
     ):
         log_content = ""
         if not radio_model_value:
-            gr.Info("Skip setup models.")
+            gr.Info("Modelleinrichtung übersprungen.")
             yield gr.value(visible=False)
             return
 
@@ -383,7 +383,7 @@ class SetupPage(BasePage):
             yield log_content
 
         if llm_output and emb_output:
-            gr.Info("Setup models completed successfully!")
+            gr.Info("Modelleinrichtung erfolgreich abgeschlossen!")
         else:
             raise gr.Error(
                 "Setup models failed. Please verify your connection and API key."

@@ -130,7 +130,7 @@ class UserManagement(BasePage):
 
             is_created = create_user(usn, pwd)
             if is_created:
-                gr.Info(f'User "{usn}" created successfully')
+                gr.Info(f'Benutzer "{usn}" wurde erfolgreich erstellt')
 
     def on_building_ui(self):
         with gr.Tab(label="Benutzerliste"):
@@ -299,7 +299,7 @@ class UserManagement(BasePage):
             statement = select(User).where(User.username_lower == usn.lower())
             result = session.exec(statement).all()
             if result:
-                gr.Warning(f'Username "{usn}" already exists')
+                gr.Warning(f'Benutzername "{usn}" existiert bereits')
                 return
 
             hashed_password = hashlib.sha256(pwd.encode()).hexdigest()
@@ -308,7 +308,7 @@ class UserManagement(BasePage):
             )
             session.add(user)
             session.commit()
-            gr.Info(f'User "{usn}" created successfully')
+            gr.Info(f'Benutzer "{usn}" wurde erfolgreich erstellt')
 
         return "", "", ""
 
@@ -342,7 +342,7 @@ class UserManagement(BasePage):
 
     def select_user(self, user_list, ev: gr.SelectData):
         if ev.value == "-" and ev.index[0] == 0:
-            gr.Info("No user is loaded. Please refresh the user list")
+            gr.Info("Es ist kein Benutzer geladen. Bitte aktualisiere die Benutzerliste")
             return -1
 
         if not ev.selected:
@@ -391,7 +391,7 @@ class UserManagement(BasePage):
 
     def on_btn_delete_click(self, selected_user_id):
         if selected_user_id is None:
-            gr.Warning("No user is selected")
+            gr.Warning("Kein Benutzer ausgewählt")
             btn_delete = gr.update(visible=True)
             btn_delete_yes = gr.update(visible=False)
             btn_delete_no = gr.update(visible=False)
@@ -424,7 +424,7 @@ class UserManagement(BasePage):
             existing = session.exec(statement).first()
             if existing:
                 gr.Warning(
-                    f'Username "{usn}" already exists. Please use a unique name.'
+                    f'Benutzername "{usn}" existiert bereits. Bitte verwende einen eindeutigen Namen.'
                 )
                 return pwd, pwd_cnf
 
@@ -436,13 +436,13 @@ class UserManagement(BasePage):
             if pwd:
                 user.password = hashlib.sha256(pwd.encode()).hexdigest()
             session.commit()
-            gr.Info(f'User "{usn}" updated successfully')
+            gr.Info(f'Benutzer "{usn}" wurde erfolgreich aktualisiert')
 
         return "", ""
 
     def delete_user(self, current_user, selected_user_id):
         if current_user == selected_user_id:
-            gr.Warning("You cannot delete yourself")
+            gr.Warning("Du kannst dich nicht selbst löschen")
             return selected_user_id
 
         with Session(engine) as session:
@@ -450,5 +450,5 @@ class UserManagement(BasePage):
             user = session.exec(statement).one()
             session.delete(user)
             session.commit()
-            gr.Info(f'User "{user.username}" deleted successfully')
+            gr.Info(f'Benutzer "{user.username}" wurde erfolgreich gelöscht')
         return -1

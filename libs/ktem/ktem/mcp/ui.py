@@ -216,7 +216,7 @@ class MCPManagement(BasePage):
         for name, config in mcp_servers.items():
             name = name.strip()
             if name in mcp_manager.info():
-                gr.Warning(f"MCP server '{name}' already exists. Skipping.")
+                gr.Warning(f"MCP-Server '{name}' existiert bereits. Wird übersprungen.")
                 failed_count += 1
                 continue
 
@@ -225,11 +225,11 @@ class MCPManagement(BasePage):
                 success_count += 1
                 msgs.append(f"# Tools for '{name}'\n\n⏳ Fetching tools...")
             except Exception as e:
-                gr.Warning(f"Failed to create MCP server '{name}': {e}")
+                gr.Warning(f"MCP-Server '{name}' konnte nicht erstellt werden: {e}")
                 failed_count += 1
 
         if success_count > 0:
-            gr.Info(f"{success_count} MCP server(s) created successfully")
+            gr.Info(f"{success_count} MCP-Server erfolgreich erstellt")
 
         if not msgs:
             return TOOLS_DEFAULT

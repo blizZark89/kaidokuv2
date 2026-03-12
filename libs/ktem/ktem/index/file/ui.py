@@ -474,7 +474,7 @@ class FileIndexPage(BasePage):
             self._index._vs.delete(vs_ids)
         self._index._docstore.delete(ds_ids)
 
-        gr.Info(f"File {file_name} has been deleted")
+        gr.Info(f"Datei {file_name} wurde gelöscht")
 
         return None, self.selected_panel_false
 
@@ -512,7 +512,7 @@ class FileIndexPage(BasePage):
                 zipMe.write(file, arcname=os.path.basename(file))
 
         if is_zipped_state:
-            new_button = gr.DownloadButton(label="Download", value=None)
+            new_button = gr.DownloadButton(label="Herunterladen", value=None)
         else:
             new_button = gr.DownloadButton(
                 label=DOWNLOAD_MESSAGE, value=f"{zip_file_path}.zip"
@@ -538,7 +538,7 @@ class FileIndexPage(BasePage):
             f.write(file_html)
 
         if is_zipped_state:
-            new_button = gr.DownloadButton(label="Download", value=None)
+            new_button = gr.DownloadButton(label="Herunterladen", value=None)
         else:
             # export the file path
             new_button = gr.DownloadButton(
@@ -578,7 +578,7 @@ class FileIndexPage(BasePage):
         if len(file_list) == 0 or (
             len(file_list) == 1 and file_list.id.values[0] == "-"
         ):
-            gr.Info("No file to delete")
+            gr.Info("Keine Datei zum Löschen vorhanden")
             return [
                 gr.update(visible=True),
                 gr.update(visible=False),
@@ -607,7 +607,7 @@ class FileIndexPage(BasePage):
                     quickUploadedEvent = (
                         self._app.chat_page.quick_file_upload.upload(
                             fn=lambda: gr.update(
-                                value="Please wait for the indexing process "
+                                value="Bitte warte, bis der Indexierungsvorgang "
                                 "to complete before adding your question."
                             ),
                             outputs=self._app.chat_page.quick_file_upload_status,
@@ -646,7 +646,7 @@ class FileIndexPage(BasePage):
                             outputs=self._app.chat_page._indices_input[1],
                         )
                         .then(
-                            fn=lambda: gr.update(value="Indexing completed."),
+                            fn=lambda: gr.update(value="Indexierung abgeschlossen."),
                             outputs=self._app.chat_page.quick_file_upload_status,
                         )
                         .then(
@@ -666,7 +666,7 @@ class FileIndexPage(BasePage):
                 quickURLUploadedEvent = (
                     self._app.chat_page.quick_urls.submit(
                         fn=lambda: gr.update(
-                            value="Please wait for the indexing process "
+                            value="Bitte warte, bis der Indexierungsvorgang "
                             "to complete before adding your question."
                         ),
                         outputs=self._app.chat_page.quick_file_upload_status,
@@ -701,7 +701,7 @@ class FileIndexPage(BasePage):
                     inputs=self.quick_upload_state,
                     outputs=self._app.chat_page._indices_input[1],
                 ).then(
-                    fn=lambda: gr.update(value="Indexing completed."),
+                    fn=lambda: gr.update(value="Indexierung abgeschlossen."),
                     outputs=self._app.chat_page.quick_file_upload_status,
                 )
 
@@ -957,7 +957,7 @@ class FileIndexPage(BasePage):
         self.group_add_button.click(
             fn=lambda: [
                 gr.update(visible=False),
-                gr.update(value="### Add new group"),
+                gr.update(value="### Neue Gruppe hinzufügen"),
                 gr.update(visible=True),
                 gr.update(value=""),
                 gr.update(value=[]),
@@ -1106,7 +1106,7 @@ class FileIndexPage(BasePage):
             errors = self.validate_urls(files)
         else:
             if not files:
-                gr.Info("No uploaded file")
+                gr.Info("Keine hochgeladene Datei")
                 yield "", ""
                 return
             files, unzip_errors = self._may_extract_zip(
@@ -1120,7 +1120,7 @@ class FileIndexPage(BasePage):
             yield "", ""
             return
 
-        gr.Info(f"Start indexing {len(files)} files...")
+        gr.Info(f"Starte Indexierung von {len(files)} Dateien...")
 
         # get the pipeline
         indexing_pipeline = self._index.get_indexing_pipeline(settings, user_id)
@@ -1153,10 +1153,10 @@ class FileIndexPage(BasePage):
 
         n_successes = len([_ for _ in results if _])
         if n_successes:
-            gr.Info(f"Successfully index {n_successes} files")
+            gr.Info(f"{n_successes} Dateien erfolgreich indexiert")
         n_errors = len([_ for _ in errors if _])
         if n_errors:
-            gr.Warning(f"Have errors for {n_errors} files")
+            gr.Warning(f"Bei {n_errors} Dateien sind Fehler aufgetreten")
 
         return results
 
@@ -1525,7 +1525,7 @@ class FileIndexPage(BasePage):
 
             group_id = current_group.id
 
-        gr.Info(f"Group {group_name} has been saved")
+        gr.Info(f"Gruppe {group_name} wurde gespeichert")
         return group_id
 
     def delete_group(self, group_id):
@@ -1542,7 +1542,7 @@ class FileIndexPage(BasePage):
                 group_name = item.name
                 session.delete(item)
                 session.commit()
-                gr.Info(f"Group {group_name} has been deleted")
+                gr.Info(f"Gruppe {group_name} wurde gelöscht")
             else:
                 raise gr.Error("No group found")
 
@@ -1550,7 +1550,7 @@ class FileIndexPage(BasePage):
 
     def interact_file_list(self, list_files, ev: gr.SelectData):
         if ev.value == "-" and ev.index[0] == 0:
-            gr.Info("No file is uploaded")
+            gr.Info("Es wurde keine Datei hochgeladen")
             return None, self.selected_panel_false
 
         if not ev.selected:
@@ -1637,7 +1637,7 @@ class FileSelector(BasePage):
             container=False,
         )
         self.selector = gr.Dropdown(
-            label="Files",
+            label="Dateien",
             value=default_selector,
             choices=[],
             multiselect=True,
