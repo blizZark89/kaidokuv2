@@ -14,6 +14,8 @@ from gradio.data_classes import FileData
 from gradio.utils import NamedString
 from ktem.app import BasePage
 from ktem.db.engine import engine
+from ktem.db.models import User
+from ktem.utils import frontend_acl
 from ktem.utils.render import Render
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -177,12 +179,15 @@ class FileIndexPage(BasePage):
             headers=[
                 "id",
                 "name",
+                "owner",
+                "access",
+                "groups",
                 "size",
                 "tokens",
                 "loader",
                 "date_created",
             ],
-            column_widths=[0, 50, 8, 7, 15, 20],
+            column_widths=[0, 28, 18, 12, 20, 8, 7, 15, 20],
             interactive=False,
             wrap=False,
             elem_id="file_list_view",
@@ -213,6 +218,27 @@ class FileIndexPage(BasePage):
             self.selected_file_id = gr.State(value=None)
             with gr.Column(scale=2):
                 self.selected_panel = gr.Markdown(self.selected_panel_false)
+                self.selected_file_owner_id = gr.State(value=None)
+
+        with gr.Group(visible=False) as self.document_access_panel:
+            self.document_access_summary = gr.Markdown()
+            self.document_share_mode = gr.Radio(
+                label="Dokumentfreigabe",
+                choices=[
+                    ("Privat", "private"),
+                    ("Für Gruppen freigeben", "group"),
+                ],
+                value="private",
+            )
+            self.document_share_groups = gr.CheckboxGroup(
+                label="Freigabe für Gruppen",
+                choices=[],
+                value=[],
+            )
+            self.document_share_save = gr.Button(
+                "Freigabe speichern",
+                variant="secondary",
+            )
 
         self.chunks = gr.HTML(visible=False)
 
@@ -391,8 +417,115 @@ class FileIndexPage(BasePage):
                     "show_progress": "hidden",
                 },
             )
+            self._app.subscribe_event(
+                name="onFrontendAclChanged",
+                definition={
+                    "fn": self.list_file,
+                    "inputs": [self._app.user_id, self.filter],
+                    "outputs": [self.file_list_state, self.file_list],
+                    "show_progress": "hidden",
+                },
+            )
+            self._app.subscribe_event(
+                name="onFrontendAclChanged",
+                definition={
+                    "fn": self.list_group,
+                    "inputs": [self._app.user_id, self.file_list_state],
+                    "outputs": [self.group_list_state, self.group_list],
+                    "show_progress": "hidden",
+                },
+            )
+            self._app.subscribe_event(
+                name="onFrontendAclChanged",
+                definition={
+                    "fn": self.list_file_names,
+                    "inputs": [self.file_list_state],
+                    "outputs": [self.group_files],
+                    "show_progress": "hidden",
+                },
+            )
 
-    def file_selected(self, file_id):
+    def _get_source_row(self, file_id):
+        if file_id is None:
+            return None
+
+        Source = self._index._resources["Source"]
+        with Session(engine) as session:
+            result = session.execute(select(Source).where(Source.id == file_id)).first()
+            return result[0] if result else None
+
+    def _get_user_name_map(self):
+        with Session(engine) as session:
+            return {user.id: user.username for user in session.exec(select(User)).all()}
+
+    def _get_document_group_choices(self, user_id):
+        allowed_ids = set(frontend_acl.get_user_group_ids(user_id))
+        return [
+            (name, group_id)
+            for name, group_id in frontend_acl.get_group_choices()
+            if group_id in allowed_ids
+        ]
+
+    def _can_manage_document(self, user_id, owner_id):
+        return bool(user_id and owner_id and user_id == owner_id)
+
+    def _get_document_access_updates(self, file_id, user_id):
+        if file_id is None:
+            return (
+                gr.update(visible=False),
+                gr.update(value=""),
+                gr.update(value="private", interactive=False),
+                gr.update(choices=[], value=[], interactive=False),
+                gr.update(visible=False),
+                gr.update(value=None),
+            )
+
+        source = self._get_source_row(file_id)
+        if source is None:
+            return (
+                gr.update(visible=False),
+                gr.update(value=""),
+                gr.update(value="private", interactive=False),
+                gr.update(choices=[], value=[], interactive=False),
+                gr.update(visible=False),
+                gr.update(value=None),
+            )
+
+        owner_id = getattr(source, "user", "") or ""
+        owner_name = self._get_user_name_map().get(owner_id, "System") if owner_id else "System"
+        share = frontend_acl.get_document_share(self._index.id, file_id, owner_id)
+        share_group_names = frontend_acl.get_document_group_names(self._index.id, file_id)
+        can_manage = self._can_manage_document(user_id, owner_id)
+        share_choices = self._get_document_group_choices(user_id)
+        allowed_group_ids = {group_id for _, group_id in share_choices}
+        selected_group_ids = [
+            group_id for group_id in share["group_ids"] if group_id in allowed_group_ids
+        ]
+        share_mode = "group" if share["group_ids"] else "private"
+        visibility_text = "Privat"
+        if share_group_names:
+            visibility_text = "Freigegeben für: " + ", ".join(share_group_names)
+
+        summary = (
+            f"**Eigentümer:** {owner_name}\n\n"
+            f"**Sichtbarkeit:** {visibility_text}\n\n"
+            f"**Bearbeitbar:** {'Ja' if can_manage else 'Nein'}"
+        )
+
+        return (
+            gr.update(visible=True),
+            gr.update(value=summary),
+            gr.update(value=share_mode, interactive=can_manage),
+            gr.update(
+                choices=share_choices,
+                value=selected_group_ids,
+                interactive=can_manage,
+            ),
+            gr.update(visible=can_manage),
+            gr.update(value=owner_id),
+        )
+
+    def file_selected(self, file_id, user_id):
         chunks = []
         if file_id is not None:
             # get the chunks
@@ -436,15 +569,21 @@ class FileIndexPage(BasePage):
                             content=content,
                         )
                     )
+        source = self._get_source_row(file_id)
+        can_manage = self._can_manage_document(
+            user_id, getattr(source, "user", "") if source else ""
+        )
+        access_updates = self._get_document_access_updates(file_id, user_id)
         return (
             gr.update(value="".join(chunks), visible=file_id is not None),
             gr.update(visible=file_id is not None),
+            gr.update(visible=can_manage),
             gr.update(visible=file_id is not None),
             gr.update(visible=file_id is not None),
-            gr.update(visible=file_id is not None),
+            *access_updates,
         )
 
-    def delete_event(self, file_id):
+    def delete_event(self, file_id, user_id):
         file_name = ""
         with Session(engine) as session:
             source = session.execute(
@@ -453,6 +592,8 @@ class FileIndexPage(BasePage):
                 )
             ).first()
             if source:
+                if source[0].user and source[0].user != user_id:
+                    raise gr.Error("Du kannst nur deine eigenen Dokumente löschen")
                 file_name = source[0].name
                 session.delete(source[0])
 
@@ -566,12 +707,40 @@ class FileIndexPage(BasePage):
                 zipMe.write(file, arcname=arcname.name)
         return gr.DownloadButton(label=DOWNLOAD_MESSAGE, value=f"{zip_file_path}.zip")
 
-    def delete_all_files(self, file_list):
+    def delete_all_files(self, file_list, user_id):
         for file_id in file_list.id.values:
-            self.delete_event(file_id)
+            if file_id != "-":
+                try:
+                    self.delete_event(file_id, user_id)
+                except gr.Error:
+                    continue
 
     def set_file_id_selector(self, selected_file_id):
         return [selected_file_id, "select", gr.Tabs(selected="chat-tab")]
+
+    def save_document_access(self, file_id, user_id, share_mode, group_ids):
+        source = self._get_source_row(file_id)
+        if source is None:
+            raise gr.Error("Kein Dokument ausgewählt")
+
+        owner_id = getattr(source, "user", "") or ""
+        if not self._can_manage_document(user_id, owner_id):
+            raise gr.Error("Du kannst nur deine eigenen Dokumente freigeben")
+
+        allowed_group_ids = set(frontend_acl.get_user_group_ids(user_id))
+        selected_group_ids = [
+            group_id for group_id in (group_ids or []) if group_id in allowed_group_ids
+        ]
+        if share_mode == "group" and not selected_group_ids:
+            raise gr.Error("Wähle mindestens eine Gruppe für die Freigabe aus")
+
+        frontend_acl.set_document_share(
+            self._index.id,
+            file_id,
+            owner_id,
+            selected_group_ids if share_mode == "group" else [],
+        )
+        gr.Info(f'Dokument "{source.name}" wurde aktualisiert')
 
     def show_delete_all_confirm(self, file_list):
         # when the list of files is empty it shows a single line with id equal to -
@@ -733,7 +902,7 @@ class FileIndexPage(BasePage):
         onDeleted = (
             self.delete_button.click(
                 fn=self.delete_event,
-                inputs=[self.selected_file_id],
+                inputs=[self.selected_file_id, self._app.user_id],
                 outputs=None,
             )
             .then(
@@ -749,13 +918,19 @@ class FileIndexPage(BasePage):
             )
             .then(
                 fn=self.file_selected,
-                inputs=[self.selected_file_id],
+                inputs=[self.selected_file_id, self._app.user_id],
                 outputs=[
                     self.chunks,
                     self.deselect_button,
                     self.delete_button,
                     self.download_single_button,
                     self.chat_button,
+                    self.document_access_panel,
+                    self.document_access_summary,
+                    self.document_share_mode,
+                    self.document_share_groups,
+                    self.document_share_save,
+                    self.selected_file_owner_id,
                 ],
                 show_progress="hidden",
             )
@@ -770,13 +945,19 @@ class FileIndexPage(BasePage):
             show_progress="hidden",
         ).then(
             fn=self.file_selected,
-            inputs=[self.selected_file_id],
+            inputs=[self.selected_file_id, self._app.user_id],
             outputs=[
                 self.chunks,
                 self.deselect_button,
                 self.delete_button,
                 self.download_single_button,
                 self.chat_button,
+                self.document_access_panel,
+                self.document_access_summary,
+                self.document_share_mode,
+                self.document_share_groups,
+                self.document_share_save,
+                self.selected_file_owner_id,
             ],
             show_progress="hidden",
         )
@@ -824,7 +1005,7 @@ class FileIndexPage(BasePage):
 
         self.delete_all_button_confirm.click(
             fn=self.delete_all_files,
-            inputs=[self.file_list],
+            inputs=[self.file_list, self._app.user_id],
             outputs=[],
             show_progress="hidden",
         ).then(
@@ -909,13 +1090,52 @@ class FileIndexPage(BasePage):
             show_progress="hidden",
         ).then(
             fn=self.file_selected,
-            inputs=[self.selected_file_id],
+            inputs=[self.selected_file_id, self._app.user_id],
             outputs=[
                 self.chunks,
                 self.deselect_button,
                 self.delete_button,
                 self.download_single_button,
                 self.chat_button,
+                self.document_access_panel,
+                self.document_access_summary,
+                self.document_share_mode,
+                self.document_share_groups,
+                self.document_share_save,
+                self.selected_file_owner_id,
+            ],
+            show_progress="hidden",
+        )
+
+        onDocumentShareSaved = self.document_share_save.click(
+            fn=self.save_document_access,
+            inputs=[
+                self.selected_file_id,
+                self._app.user_id,
+                self.document_share_mode,
+                self.document_share_groups,
+            ],
+            outputs=[],
+            show_progress="hidden",
+        ).then(
+            fn=self.list_file,
+            inputs=[self._app.user_id, self.filter],
+            outputs=[self.file_list_state, self.file_list],
+        ).then(
+            fn=self.file_selected,
+            inputs=[self.selected_file_id, self._app.user_id],
+            outputs=[
+                self.chunks,
+                self.deselect_button,
+                self.delete_button,
+                self.download_single_button,
+                self.chat_button,
+                self.document_access_panel,
+                self.document_access_summary,
+                self.document_share_mode,
+                self.document_share_groups,
+                self.document_share_save,
+                self.selected_file_owner_id,
             ],
             show_progress="hidden",
         )
@@ -1035,6 +1255,10 @@ class FileIndexPage(BasePage):
         for event in self._app.get_event(f"onFileIndex{self._index.id}Changed"):
             onGroupDeleted = onGroupDeleted.then(**event)
             onGroupSaved = onGroupSaved.then(**event)
+            onDocumentShareSaved = onDocumentShareSaved.then(**event)
+
+        for event in self._app.get_event("onFrontendAclChanged"):
+            onDocumentShareSaved = onDocumentShareSaved.then(**event)
 
     def _on_app_created(self):
         """Called when the app is created"""
@@ -1357,6 +1581,9 @@ class FileIndexPage(BasePage):
                     {
                         "id": "-",
                         "name": "-",
+                        "owner": "-",
+                        "access": "-",
+                        "groups": "-",
                         "size": "-",
                         "tokens": "-",
                         "loader": "-",
@@ -1368,23 +1595,49 @@ class FileIndexPage(BasePage):
         Source = self._index._resources["Source"]
         with Session(engine) as session:
             statement = select(Source)
-            if self._index.config.get("private", False):
-                statement = statement.where(Source.user == user_id)
             if name_pattern:
                 statement = statement.where(Source.name.ilike(f"%{name_pattern}%"))
-            results = [
+            sources = [each[0] for each in session.execute(statement).all()]
+
+        user_name_by_id = self._get_user_name_map()
+        visible_sources = []
+        for source in sources:
+            if self._index.config.get("private", False):
+                if not frontend_acl.can_user_view_document(
+                    self._index.id,
+                    user_id,
+                    getattr(source, "user", ""),
+                    source.id,
+                ):
+                    continue
+            visible_sources.append(source)
+
+        results = []
+        for source in visible_sources:
+            group_names = frontend_acl.get_document_group_names(self._index.id, source.id)
+            owner_id = getattr(source, "user", "") or ""
+            owner_name = user_name_by_id.get(owner_id, "System") if owner_id else "System"
+            access = "Privat"
+            if group_names:
+                access = "Gruppe"
+            elif not self._index.config.get("private", False):
+                access = "Global"
+
+            results.append(
                 {
-                    "id": each[0].id,
-                    "name": each[0].name,
-                    "size": self.format_size_human_readable(each[0].size),
+                    "id": source.id,
+                    "name": source.name,
+                    "owner": owner_name,
+                    "access": access,
+                    "groups": ", ".join(group_names) if group_names else "-",
+                    "size": self.format_size_human_readable(source.size),
                     "tokens": self.format_size_human_readable(
-                        each[0].note.get("tokens", "-"), suffix=""
+                        source.note.get("tokens", "-"), suffix=""
                     ),
-                    "loader": each[0].note.get("loader", "-"),
-                    "date_created": each[0].date_created.strftime("%Y-%m-%d %H:%M:%S"),
+                    "loader": source.note.get("loader", "-"),
+                    "date_created": source.date_created.strftime("%Y-%m-%d %H:%M:%S"),
                 }
-                for each in session.execute(statement).all()
-            ]
+            )
 
         if results:
             file_list = pd.DataFrame.from_records(results)
@@ -1394,6 +1647,9 @@ class FileIndexPage(BasePage):
                     {
                         "id": "-",
                         "name": "-",
+                        "owner": "-",
+                        "access": "-",
+                        "groups": "-",
                         "size": "-",
                         "tokens": "-",
                         "loader": "-",
@@ -1681,14 +1937,17 @@ class FileSelector(BasePage):
 
         file_ids = []
         with Session(engine) as session:
-            statement = select(self._index._resources["Source"].id)
-            if self._index.config.get("private", False):
-                statement = statement.where(
-                    self._index._resources["Source"].user == user_id
-                )
+            statement = select(self._index._resources["Source"])
             results = session.execute(statement).all()
-            for (id,) in results:
-                file_ids.append(id)
+            for (source,) in results:
+                if self._index.config.get("private", False) and not frontend_acl.can_user_view_document(
+                    self._index.id,
+                    user_id,
+                    getattr(source, "user", ""),
+                    source.id,
+                ):
+                    continue
+                file_ids.append(source.id)
 
         return file_ids
 
@@ -1702,19 +1961,22 @@ class FileSelector(BasePage):
         with Session(engine) as session:
             # get file list from Source table
             statement = select(self._index._resources["Source"])
-            if self._index.config.get("private", False):
-                statement = statement.where(
-                    self._index._resources["Source"].user == user_id
-                )
-
             if KH_DEMO_MODE:
                 # limit query by MAX_FILE_COUNT
                 statement = statement.limit(MAX_FILE_COUNT)
 
             results = session.execute(statement).all()
             for result in results:
-                available_ids.append(result[0].id)
-                options.append((result[0].name, result[0].id))
+                source = result[0]
+                if self._index.config.get("private", False) and not frontend_acl.can_user_view_document(
+                    self._index.id,
+                    user_id,
+                    getattr(source, "user", ""),
+                    source.id,
+                ):
+                    continue
+                available_ids.append(source.id)
+                options.append((source.name, source.id))
 
             # get group list from FileGroup table
             FileGroup = self._index._resources["FileGroup"]
@@ -1764,3 +2026,12 @@ class FileSelector(BasePage):
                         "show_progress": "hidden",
                     },
                 )
+            self._app.subscribe_event(
+                name="onFrontendAclChanged",
+                definition={
+                    "fn": self.load_files,
+                    "inputs": [self.selector, self._app.user_id],
+                    "outputs": [self.selector, self.selector_choices],
+                    "show_progress": "hidden",
+                },
+            )
