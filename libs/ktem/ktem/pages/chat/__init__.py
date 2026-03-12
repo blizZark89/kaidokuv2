@@ -237,7 +237,7 @@ class ChatPage(BasePage):
                     index_name = index.name
 
                     if KH_DEMO_MODE and is_first_index:
-                        index_name = "Select from Paper Collection"
+                        index_name = "Aus Papersammlung auswählen"
 
                     with gr.Accordion(
                         label=index_name,
@@ -272,7 +272,7 @@ class ChatPage(BasePage):
 
                 if len(self._app.index_manager.indices) > 0:
                     quick_upload_label = (
-                        "Quick Upload" if not KH_DEMO_MODE else "Or input new paper URL"
+                        "Schnell-Upload" if not KH_DEMO_MODE else "Oder neue Paper-URL eingeben"
                     )
 
                     with gr.Accordion(label=quick_upload_label) as _:
@@ -287,9 +287,9 @@ class ChatPage(BasePage):
                             )
                         self.quick_urls = gr.Textbox(
                             placeholder=(
-                                "Or paste URLs"
+                                "Oder URLs einfügen"
                                 if not KH_DEMO_MODE
-                                else "Paste Arxiv URLs\n(https://arxiv.org/abs/xxx)"
+                                else "Arxiv-URLs einfügen\n(https://arxiv.org/abs/xxx)"
                             ),
                             lines=1,
                             container=False,
@@ -302,7 +302,7 @@ class ChatPage(BasePage):
                 if not KH_DEMO_MODE:
                     self.report_issue = ReportIssue(self._app)
                 else:
-                    with gr.Accordion(label="Related papers", open=False):
+                    with gr.Accordion(label="Ähnliche Papers", open=False):
                         self.related_papers = gr.Markdown(elem_id="related-papers")
 
                     self.hint_page = HintPage(self._app)
@@ -314,17 +314,17 @@ class ChatPage(BasePage):
                 self.chat_panel = ChatPanel(self._app)
 
                 with gr.Accordion(
-                    label="Chat settings",
+                    label="Chat-Einstellungen",
                     elem_id="chat-settings-expand",
                     open=False,
                     visible=not KH_DEMO_MODE,
                 ) as self.chat_settings:
                     with gr.Row(elem_id="quick-setting-labels"):
-                        gr.HTML("Reasoning method")
+                        gr.HTML("Denkmethode")
                         gr.HTML(
-                            "Model", visible=not KH_DEMO_MODE and not KH_SSO_ENABLED
+                            "Modell", visible=not KH_DEMO_MODE and not KH_SSO_ENABLED
                         )
-                        gr.HTML("Language")
+                        gr.HTML("Sprache")
 
                     with gr.Row():
                         reasoning_setting = (
@@ -372,7 +372,7 @@ class ChatPage(BasePage):
                         if not config("USE_LOW_LLM_REQUESTS", default=False, cast=bool):
                             self.use_mindmap = gr.State(value=True)
                             self.use_mindmap_check = gr.Checkbox(
-                                label="Mindmap (on)",
+                                label="Mindmap (an)",
                                 container=False,
                                 elem_id="use-mindmap-checkbox",
                                 value=True,
@@ -380,7 +380,7 @@ class ChatPage(BasePage):
                         else:
                             self.use_mindmap = gr.State(value=False)
                             self.use_mindmap_check = gr.Checkbox(
-                                label="Mindmap (off)",
+                                label="Mindmap (aus)",
                                 container=False,
                                 elem_id="use-mindmap-checkbox",
                                 value=False,
@@ -390,7 +390,7 @@ class ChatPage(BasePage):
                 scale=INFO_PANEL_SCALES[False], elem_id="chat-info-panel"
             ) as self.info_column:
                 with gr.Accordion(
-                    label="Information panel", open=True, elem_id="info-expand"
+                    label="Informationsbereich", open=True, elem_id="info-expand"
                 ):
                     self.modal = gr.HTML("<div id='pdf-modal'></div>")
                     self.plot_panel = gr.Plot(visible=False)
