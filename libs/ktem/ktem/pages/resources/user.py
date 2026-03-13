@@ -159,18 +159,18 @@ class UserManagement(BasePage):
                 with gr.Column():
                     self.btn_close = gr.Button("Schließen")
 
-        with gr.Tab("Benutzer erstellen"):
-            self.usn_new = gr.Textbox(label="Benutzername", interactive=True)
-            self.pwd_new = gr.Textbox(
-                label="Passwort", type="password", interactive=True
-            )
-            self.pwd_cnf_new = gr.Textbox(
-                label="Passwort bestätigen", type="password", interactive=True
-            )
-            with gr.Row():
-                gr.Markdown(USERNAME_RULE)
-                gr.Markdown(PASSWORD_RULE)
-            self.btn_new = gr.Button("Benutzer erstellen")
+            with gr.Accordion("Neuen Benutzer anlegen", open=False):
+                self.usn_new = gr.Textbox(label="Benutzername", interactive=True)
+                self.pwd_new = gr.Textbox(
+                    label="Passwort", type="password", interactive=True
+                )
+                self.pwd_cnf_new = gr.Textbox(
+                    label="Passwort bestätigen", type="password", interactive=True
+                )
+                with gr.Row():
+                    gr.Markdown(USERNAME_RULE)
+                    gr.Markdown(PASSWORD_RULE)
+                self.btn_new = gr.Button("Benutzer erstellen")
 
         with gr.Tab("Gruppenverwaltung"):
             self.state_group_list = gr.State(value=None)
