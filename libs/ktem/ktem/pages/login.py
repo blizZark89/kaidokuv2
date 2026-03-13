@@ -3,7 +3,7 @@ import hashlib
 import gradio as gr
 from ktem.app import BasePage
 from ktem.db.models import User, engine
-from ktem.pages.resources.user import create_user
+from ktem.pages.resources.user import create_user, normalize_username
 from sqlmodel import Session, select
 
 fetch_creds = """
@@ -117,6 +117,7 @@ class LoginPage(BasePage):
                 )
                 return user_id, "", ""
         else:
+            usn = normalize_username(usn)
             if not usn or not pwd:
                 return None, usn, pwd
 

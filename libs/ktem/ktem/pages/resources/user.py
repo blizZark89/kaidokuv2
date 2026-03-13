@@ -28,8 +28,16 @@ PASSWORD_RULE = """**Passwort-Regeln:**
 """
 
 
+def normalize_username(usn: str) -> str:
+    return (usn or "").strip()
+
+
 def validate_username(usn):
+    usn = normalize_username(usn)
     errors = []
+    if not usn:
+        errors.append("Benutzername darf nicht leer sein")
+
     if len(usn) < 3:
         errors.append("Benutzername muss mindestens 3 Zeichen lang sein")
 
@@ -75,6 +83,7 @@ def validate_password(pwd, pwd_cnf):
 
 
 def create_user(usn, pwd, user_id=None, is_admin=True) -> bool:
+    usn = normalize_username(usn)
     with Session(engine) as session:
         statement = select(User).where(User.username_lower == usn.lower())
         result = session.exec(statement).all()
@@ -191,7 +200,7 @@ class UserManagement(BasePage):
     def on_register_events(self):
         self.btn_new.click(
             self.create_user,
-            inputs=[self.usn_new, self.pwd_new, self.pwd_cnf_new],
+            inputs=[self._app.user_id, self.usn_new, self.pwd_new, self.pwd_cnf_new],
             outputs=[self.usn_new, self.pwd_new, self.pwd_cnf_new],
         ).then(
             self.list_users,
@@ -262,6 +271,7 @@ class UserManagement(BasePage):
         on_user_saved = self.btn_edit_save.click(
             self.save_user,
             inputs=[
+                self._app.user_id,
                 self.selected_user_id,
                 self.usn_edit,
                 self.pwd_edit,
@@ -317,6 +327,7 @@ class UserManagement(BasePage):
         on_group_saved = self.group_save_button.click(
             self.save_group,
             inputs=[
+                self._app.user_id,
                 self.selected_group_id,
                 self.group_name_edit,
                 self.group_members_edit,
@@ -334,7 +345,7 @@ class UserManagement(BasePage):
         )
         on_group_deleted = self.group_delete_button.click(
             self.delete_group,
-            inputs=[self.selected_group_id],
+            inputs=[self._app.user_id, self.selected_group_id],
             outputs=[self.selected_group_id],
             show_progress="hidden",
         ).then(
@@ -415,7 +426,20 @@ class UserManagement(BasePage):
     def _get_user_choices(self):
         return [(user.username, user.id) for user in self._get_all_users()]
 
-    def create_user(self, usn, pwd, pwd_cnf):
+    def _is_admin(self, user_id) -> bool:
+        if not user_id:
+            return False
+
+        with Session(engine) as session:
+            user = session.exec(select(User).where(User.id == user_id)).first()
+            return bool(user and user.admin)
+
+    def create_user(self, current_user_id, usn, pwd, pwd_cnf):
+        if not self._is_admin(current_user_id):
+            gr.Warning("Nur Administratoren koennen Benutzer erstellen")
+            return usn, pwd, pwd_cnf
+
+        usn = normalize_username(usn)
         errors = validate_username(usn)
         if errors:
             gr.Warning(errors)
@@ -579,7 +603,14 @@ class UserManagement(BasePage):
             gr.update(visible=True),
         )
 
-    def save_user(self, selected_user_id, usn, pwd, pwd_cnf, admin, group_ids):
+    def save_user(
+        self, current_user_id, selected_user_id, usn, pwd, pwd_cnf, admin, group_ids
+    ):
+        if not self._is_admin(current_user_id):
+            gr.Warning("Nur Administratoren koennen Benutzer bearbeiten")
+            return pwd, pwd_cnf
+
+        usn = normalize_username(usn)
         errors = validate_username(usn)
         if errors:
             gr.Warning(errors)
@@ -617,6 +648,10 @@ class UserManagement(BasePage):
         return "", ""
 
     def delete_user(self, current_user, selected_user_id):
+        if not self._is_admin(current_user):
+            gr.Warning("Nur Administratoren koennen Benutzer loeschen")
+            return selected_user_id
+
         if current_user == selected_user_id:
             gr.Warning("Du kannst dich nicht selbst löschen")
             return selected_user_id
@@ -693,7 +728,11 @@ class UserManagement(BasePage):
             gr.update(choices=user_choices, value=group["members"]),
         )
 
-    def save_group(self, group_id, group_name, member_ids):
+    def save_group(self, current_user_id, group_id, group_name, member_ids):
+        if not self._is_admin(current_user_id):
+            gr.Warning("Nur Administratoren koennen Gruppen verwalten")
+            return group_id
+
         try:
             if group_id and group_id != "new":
                 group = frontend_acl.update_group(group_id, group_name, member_ids or [])
@@ -706,7 +745,11 @@ class UserManagement(BasePage):
         gr.Info(f'Gruppe "{group["name"]}" wurde gespeichert')
         return group["id"]
 
-    def delete_group(self, group_id):
+    def delete_group(self, current_user_id, group_id):
+        if not self._is_admin(current_user_id):
+            gr.Warning("Nur Administratoren koennen Gruppen loeschen")
+            return group_id
+
         if not group_id:
             gr.Warning("Keine Gruppe ausgewählt")
             return group_id
